@@ -29,8 +29,8 @@ import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies
 import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantTopologyNode;
 import net.fhirfactory.pegacorn.internals.PegacornReferenceProperties;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsTopologyGraphHandler;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ProcessingPlantTopologyNodeHandler;
-import net.fhirfactory.pegacorn.itops.model.ITOpsMonitoredSubsystem;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.workshops.base.Workshop;
@@ -40,6 +40,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.OnExceptionDefinition;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.camel.model.rest.RestParamType;
+import org.hl7.fhir.r4.model.AuditEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +70,9 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
     @Inject
     private ProcessingPlantTopologyNodeHandler processingPlantHandler;
 
+    @Inject
+    private ITOpsTopologyGraphHandler topologyGraphHandler;
+
     //
     // Post Construct Activities
     //
@@ -96,6 +100,10 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
 //                    .corsAllowCredentials(true)
 //                    .corsHeaderProperty("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, login");
 
+        rest("/ITOpsTopologyGraph")
+                .get("")
+                    .to("direct:ITOpsTopologyGraphGET");
+
         rest("/ProcessingPlantTopologyNode")
                 .get("/{nodeKey}").outType(ProcessingPlantTopologyNode.class)
                     .to("direct:ProcessingPlantTopologyNodeGET")
@@ -106,6 +114,10 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                     .param().name("sortOrder").type(RestParamType.query).required(false).endParam()
                     .to("direct:ProcessingPlantTopologyNodeListGET");
 
+        from("direct:ITOpsTopologyGraphGET")
+                .log(LoggingLevel.INFO, "GET TopologyGraph")
+                .bean(topologyGraphHandler, "getTopologyGraph");
+
         from("direct:ProcessingPlantTopologyNodeGET")
                 .log(LoggingLevel.INFO, "GET Request --> ${body}")
                 .bean(processingPlantHandler, "getProcessingPlantTopologyNode");
@@ -115,7 +127,7 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                 .bean(processingPlantHandler, "getProcessingPlantTopologyNodeList");
 
         rest("/AuditEvents")
-                .get("/{nodeName}").outType(ITOpsMonitoredSubsystem.class)
+                .get("/{nodeName}").outType(AuditEvent.class)
                 .to("direct:AuditEventGET");
 
         from("direct:AuditEventGET")
