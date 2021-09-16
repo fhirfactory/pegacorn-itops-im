@@ -105,7 +105,7 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                     .to("direct:ITOpsTopologyGraphGET");
 
         rest("/ProcessingPlantTopologyNode")
-                .get("/{componentId}").outType(ProcessingPlantTopologyNode.class)
+                .get("/{nodeKey}").outType(ProcessingPlantTopologyNode.class)
                     .to("direct:ProcessingPlantTopologyNodeGET")
                 .get("?pageSize={pageSize}&page={page}&sortBy={sortBy}&sortOrder={sortOrder}")
                     .param().name("pageSize").type(RestParamType.query).required(false).endParam()

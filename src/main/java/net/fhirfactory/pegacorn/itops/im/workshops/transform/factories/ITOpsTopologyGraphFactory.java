@@ -49,7 +49,7 @@ public class ITOpsTopologyGraphFactory {
 
     public ITOpsTopologyGraph newTopologyGraph(){
         ITOpsTopologyGraph graph = new ITOpsTopologyGraph();
-        graph.setDeploymentName(processingPlant.getSolutionNode().getComponentId());
+        graph.setDeploymentName(processingPlant.getSolutionNode().getNodeKey());
         for(TopologyNode currentNode: nodeDM.getTopologyNodeSet()){
             if(currentNode.getComponentType().equals(TopologyNodeTypeEnum.PROCESSING_PLANT)){
                 ProcessingPlantTopologyNode currentProcessingPlantTopologyNode = (ProcessingPlantTopologyNode)currentNode;

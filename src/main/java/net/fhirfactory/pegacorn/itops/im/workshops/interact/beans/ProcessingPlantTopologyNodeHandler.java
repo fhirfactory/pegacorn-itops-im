@@ -52,9 +52,9 @@ public class ProcessingPlantTopologyNodeHandler {
         return(LOG);
     }
 
-    protected ProcessingPlantTopologyNode getProcessingPlantTopologyNode(@Header("componentId") String componentId) throws ResourceInvalidSearchException {
-        getLogger().debug(".getProcessingPlantTopologyNode(): Entry, componentId --> {}", componentId);
-        TopologyNode node = getNodeDM().getNode(componentId);
+    protected ProcessingPlantTopologyNode getProcessingPlantTopologyNode(@Header("nodeKey") String nodeKey) throws ResourceInvalidSearchException {
+        getLogger().debug(".getProcessingPlantTopologyNode(): Entry, nodeKey --> {}", nodeKey);
+        TopologyNode node = getNodeDM().getNode(nodeKey);
         if(node.getComponentType().equals(TopologyNodeTypeEnum.PROCESSING_PLANT)){
             ProcessingPlantTopologyNode subsystemNode = (ProcessingPlantTopologyNode) node;
             return(subsystemNode);
@@ -72,7 +72,7 @@ public class ProcessingPlantTopologyNodeHandler {
         for(TopologyNode currentNode: nodeList){
             if(currentNode.getComponentType().equals(TopologyNodeTypeEnum.PROCESSING_PLANT)){
                 ProcessingPlantTopologyNode currentSubsystemNode = (ProcessingPlantTopologyNode)currentNode;
-                getLogger().info(".getProcessingPlantTopologyNodeList(): Adding Entry->{}", currentSubsystemNode.getComponentId());
+                getLogger().info(".getProcessingPlantTopologyNodeList(): Adding Entry->{}", currentSubsystemNode.getNodeKey());
                 subsystemNodeList.add(currentSubsystemNode);
             }
         }
