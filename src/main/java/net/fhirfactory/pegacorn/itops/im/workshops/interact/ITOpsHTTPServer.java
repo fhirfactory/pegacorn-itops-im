@@ -27,10 +27,12 @@ import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.Reso
 import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.IPCTopologyEndpoint;
 import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPServerClusterServiceTopologyEndpointPort;
 import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantTopologyNode;
+import net.fhirfactory.pegacorn.deployment.topology.model.nodes.WorkshopTopologyNode;
 import net.fhirfactory.pegacorn.internals.PegacornReferenceProperties;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsTopologyGraphHandler;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ProcessingPlantTopologyNodeHandler;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.WorkshopTopologyNodeHandler;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.workshops.base.Workshop;
@@ -73,6 +75,9 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
     @Inject
     private ITOpsTopologyGraphHandler topologyGraphHandler;
 
+    @Inject
+    private WorkshopTopologyNodeHandler topologyWorkshopHandler;
+
     //
     // Post Construct Activities
     //
@@ -107,6 +112,8 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         rest("/ProcessingPlantTopologyNode")
                 .get("/{nodeKey}").outType(ProcessingPlantTopologyNode.class)
                     .to("direct:ProcessingPlantTopologyNodeGET")
+                .get("/{nodeKey}/Workshop").outType(WorkshopTopologyNode.class)
+                    .to("direct:WorkshopNodesGET")
                 .get("?pageSize={pageSize}&page={page}&sortBy={sortBy}&sortOrder={sortOrder}")
                     .param().name("pageSize").type(RestParamType.query).required(false).endParam()
                     .param().name("page").type(RestParamType.query).required(false).endParam()
@@ -117,6 +124,10 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         from("direct:ITOpsTopologyGraphGET")
                 .log(LoggingLevel.INFO, "GET TopologyGraph")
                 .bean(topologyGraphHandler, "getTopologyGraph");
+        
+        from("direct:WorkshopNodesGET")
+        .log(LoggingLevel.INFO, "GET ProcessingPlant Workshops")
+        .bean(topologyWorkshopHandler, "getProcessingPlantTopologyNodes");
 
         from("direct:ProcessingPlantTopologyNodeGET")
                 .log(LoggingLevel.INFO, "GET Request --> ${body}")
