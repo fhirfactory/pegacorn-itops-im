@@ -31,7 +31,7 @@ public abstract class ITOpsMonitoredNodeFactory {
     abstract protected Logger getLogger();
 
     protected ITOpsMonitoredNode newITOpsMonitoredNode(ITOpsMonitoredNode monitoredNode, TopologyNode topologyNode){
-        monitoredNode.setNodeID(topologyNode.getNodeKey());
+        monitoredNode.setComponentID(topologyNode.getNodeKey());
         monitoredNode.setComponentName(topologyNode.getNodeRDN().getNodeName());
         ITOpsMonitoredNodeTypeEnum nodeTypeEnum = ITOpsMonitoredNodeTypeEnum.nodeTypeFromTopologyNodeType(topologyNode.getComponentType());
         monitoredNode.setNodeType(nodeTypeEnum);
