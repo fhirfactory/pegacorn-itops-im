@@ -41,7 +41,7 @@ import net.fhirfactory.pegacorn.petasos.endpoints.oam.itops.ITOpsDiscoveredNodes
 
 @ApplicationScoped
 public class WorkshopTopologyNodeHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(ProcessingPlantTopologyNodeHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WorkshopTopologyNodeHandler.class);
 
     @Inject
     private ITOpsDiscoveredNodesDM nodeDM;
