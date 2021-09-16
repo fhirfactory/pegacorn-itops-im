@@ -21,6 +21,20 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.interact;
 
+import java.util.ArrayList;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.model.OnExceptionDefinition;
+import org.apache.camel.model.rest.RestBindingMode;
+import org.apache.camel.model.rest.RestParamType;
+import org.hl7.fhir.r4.model.AuditEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeFDN;
 import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceNotFoundException;
 import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceUpdateException;
@@ -37,18 +51,6 @@ import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.workshops.base.Workshop;
 import net.fhirfactory.pegacorn.wups.archetypes.unmanaged.NonResilientWithAuditTrailWUP;
-import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.model.OnExceptionDefinition;
-import org.apache.camel.model.rest.RestBindingMode;
-import org.apache.camel.model.rest.RestParamType;
-import org.hl7.fhir.r4.model.AuditEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.util.ArrayList;
 
 @ApplicationScoped
 public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
@@ -127,7 +129,7 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         
         from("direct:WorkshopNodesGET")
         .log(LoggingLevel.INFO, "GET ProcessingPlant Workshops")
-        .bean(topologyWorkshopHandler, "getProcessingPlantTopologyNodes");
+        .bean(topologyWorkshopHandler, "getWorkshopTopologyNodes");
 
         from("direct:ProcessingPlantTopologyNodeGET")
                 .log(LoggingLevel.INFO, "GET Request --> ${body}")

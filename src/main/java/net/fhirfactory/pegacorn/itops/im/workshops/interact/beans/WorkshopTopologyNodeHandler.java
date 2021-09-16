@@ -55,16 +55,19 @@ public class WorkshopTopologyNodeHandler {
     }
     
     protected List<WorkshopTopologyNode> getWorkshopTopologyNodes(@Header("nodeKey") String nodeKey) throws ResourceInvalidSearchException {
-        getLogger().debug(".getWorkshopTopologyNode(): Entry, componentId --> {}", nodeKey);
+        getLogger().debug(".getWorkshopTopologyNode(): Entry, nodeKey --> {}", nodeKey);
         TopologyNode node = getNodeDM().getNode(nodeKey);
         if (node.getComponentType().equals(TopologyNodeTypeEnum.PROCESSING_PLANT)) {
             ProcessingPlantTopologyNode subsystemNode = (ProcessingPlantTopologyNode) node;
             List<WorkshopTopologyNode> workshops = new ArrayList<WorkshopTopologyNode>();
-            for(TopologyNodeFDN workshopFDN : subsystemNode.getWorkshops()) {
-                TopologyNode workshop = getNodeDM().getTopologyNode(workshopFDN);
-                workshops.add((WorkshopTopologyNode)workshop);
+            if(subsystemNode.getWorkshops() != null ) {
+                for(TopologyNodeFDN workshopFDN : subsystemNode.getWorkshops()) {
+                    TopologyNode workshop = getNodeDM().getTopologyNode(workshopFDN);
+                    workshops.add((WorkshopTopologyNode)workshop);
+                }
+                return workshops;
             }
-            return workshops;
+            getLogger().debug(".getWorkshopTopologyNode(): No workshops associated with nodeKey --> {}", nodeKey);
         }
         return (null);
     }
