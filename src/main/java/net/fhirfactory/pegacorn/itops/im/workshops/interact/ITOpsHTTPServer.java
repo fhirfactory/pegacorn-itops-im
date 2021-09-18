@@ -45,6 +45,8 @@ import net.fhirfactory.pegacorn.deployment.topology.model.nodes.WorkshopTopology
 import net.fhirfactory.pegacorn.internals.PegacornReferenceProperties;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.AuditEventHandler;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsMetricsHandler;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsSubscriptionsHandler;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsTopologyGraphHandler;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ProcessingPlantTopologyNodeHandler;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.WorkshopTopologyNodeHandler;
@@ -84,6 +86,11 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
     @Inject
     private AuditEventHandler auditEventHandler;
 
+    @Inject
+    private ITOpsMetricsHandler metricsHandler;
+    
+    @Inject
+    private ITOpsSubscriptionsHandler subscriptionsHandler;
     //
     // Post Construct Activities
     //
@@ -128,8 +135,18 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                     .to("direct:ProcessingPlantTopologyNodeListGET");      
 
         rest("/AuditEvents")
-                .get("/{nodeName}").outType(AuditEvent.class)
+                .get("/{nodeName}")
                 .to("direct:AuditEventGET");
+        
+        rest("/Metrics")
+                .get("/{nodeName}")
+                .to("direct:MetricsGET");
+
+        rest("/Subscriptions")
+                .get("/{nodeName}")
+                .to("direct:SubscriptionsGET");
+
+
 
         from("direct:ITOpsTopologyGraphGET")
                 .log(LoggingLevel.INFO, "GET TopologyGraph")
@@ -150,6 +167,14 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         from("direct:AuditEventGET")
                 .log(LoggingLevel.INFO, "GET Request --> ${body}")
                 .bean(auditEventHandler, "getSiteAuditRecords");
+
+        from("direct:MetricsGET")
+                .log(LoggingLevel.INFO, "GET Request --> ${body}")
+                .bean(metricsHandler, "getMetricsSet");
+
+        from("direct:SubscriptionsGET")
+                .log(LoggingLevel.INFO, "GET Request --> ${body}")
+                .bean(subscriptionsHandler, "getSubscriptions");
 
     }
 
