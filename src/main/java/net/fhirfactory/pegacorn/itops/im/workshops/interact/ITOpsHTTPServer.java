@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.*;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.OnExceptionDefinition;
@@ -44,11 +45,6 @@ import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantT
 import net.fhirfactory.pegacorn.deployment.topology.model.nodes.WorkshopTopologyNode;
 import net.fhirfactory.pegacorn.internals.PegacornReferenceProperties;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
-import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsMetricsHandler;
-import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsPubSubReportHandler;
-import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsTopologyGraphHandler;
-import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ProcessingPlantTopologyNodeHandler;
-import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.WorkshopTopologyNodeHandler;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
@@ -86,6 +82,9 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
     @Inject
     private ITOpsPubSubReportHandler pubSubReportHandler;
 
+    @Inject
+    private AuditEventHandler auditEventHandler;
+
     //
     // Post Construct Activities
     //
@@ -120,8 +119,6 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         rest("/ProcessingPlant")
                 .get("/{componentId}").outType(ProcessingPlantTopologyNode.class)
                     .to("direct:ProcessingPlantTopologyNodeGET")
-                .get("/{nodeKey}/Workshop").outType(WorkshopTopologyNode.class)
-                    .to("direct:WorkshopNodesGET")
                 .get("?pageSize={pageSize}&page={page}&sortBy={sortBy}&sortOrder={sortOrder}")
                     .param().name("pageSize").type(RestParamType.query).required(false).endParam()
                     .param().name("page").type(RestParamType.query).required(false).endParam()
@@ -132,24 +129,11 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         rest("/AuditEvents")
                 .get("/{nodeName}")
                 .to("direct:AuditEventGET");
-        
-        rest("/Metrics")
-                .get("/{nodeName}")
-                .to("direct:MetricsGET");
-
-        rest("/Subscriptions")
-                .get("/{nodeName}")
-                .to("direct:SubscriptionsGET");
-
 
 
         from("direct:ITOpsTopologyGraphGET")
                 .log(LoggingLevel.INFO, "GET TopologyGraph")
                 .bean(topologyGraphHandler, "getTopologyGraph");
-        
-        from("direct:WorkshopNodesGET")
-                .log(LoggingLevel.INFO, "GET ProcessingPlant Workshops")
-                .bean(topologyWorkshopHandler, "getWorkshopTopologyNodes");
 
         from("direct:ProcessingPlantTopologyNodeGET")
                 .log(LoggingLevel.INFO, "GET Request --> ${body}")
@@ -166,10 +150,6 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         rest("/AuditEvents")
                 .get("/{componentId}").outType(AuditEvent.class)
                 .to("direct:AuditEventGET");
-
-        from("direct:SubscriptionsGET")
-                .log(LoggingLevel.INFO, "GET Request --> ${body}")
-                .bean(subscriptionsHandler, "getSubscriptions");
 
         //
         // Metrics

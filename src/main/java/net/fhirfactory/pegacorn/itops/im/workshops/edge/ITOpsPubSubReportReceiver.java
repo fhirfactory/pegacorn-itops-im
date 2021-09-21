@@ -88,14 +88,16 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase {
     }
 
     private void updateLocalCache(ITOpsPubSubReport report){
-        getLogger().debug(".updateLocalCache(): Entry");
+        getLogger().info(".updateLocalCache(): Entry");
         for(ProcessingPlantSubscriptionSummary currentSummary: report.getProcessingPlantSubscriptionSummarySet().values()){
+            getLogger().info(".updateLocalCache(): Updating->{}", currentSummary.getComponentID());
             pubsubMapDM.addProcessingPlantSubscriptionSummary(currentSummary);
         }
         for(WorkUnitProcessorSubscriptionSummary currentSummary: report.getWupSubscriptionSummarySet().values()){
+            getLogger().info(".updateLocalCache(): Updating->{}", currentSummary.getComponentID());
             pubsubMapDM.addWorkUnitProcessorSubscriptionSummary(currentSummary);
         }
-        getLogger().debug(".updateLocalCache(): Exit");
+        getLogger().info(".updateLocalCache(): Exit");
     }
 
 }

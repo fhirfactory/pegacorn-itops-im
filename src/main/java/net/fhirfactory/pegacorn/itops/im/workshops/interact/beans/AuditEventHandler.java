@@ -21,24 +21,22 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.interact.beans;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
+import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeFDN;
+import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeRDN;
+import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeTypeEnum;
+import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceInvalidSearchException;
+import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideTopologyDM;
+import net.fhirfactory.pegacorn.petasos.model.itops.topology.ITOpsMonitoredProcessingPlant;
+import net.fhirfactory.pegacorn.petasos.model.itops.topology.common.ITOpsMonitoredNode;
 import org.apache.camel.Header;
 import org.apache.maven.shared.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeFDN;
-import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeRDN;
-import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeTypeEnum;
-import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceInvalidSearchException;
-import net.fhirfactory.pegacorn.deployment.topology.model.common.TopologyNode;
-import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantTopologyNode;
-import net.fhirfactory.pegacorn.petasos.endpoints.oam.itops.ITOpsDiscoveredNodesDM;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 
 @ApplicationScoped
 public class AuditEventHandler {
@@ -47,9 +45,9 @@ public class AuditEventHandler {
     private static final Logger LOG = LoggerFactory.getLogger(AuditEventHandler.class);
 
     @Inject
-    private ITOpsDiscoveredNodesDM nodeDM;
+    private ITOpsSystemWideTopologyDM nodeDM;
 
-    protected ITOpsDiscoveredNodesDM getNodeDM() {
+    protected ITOpsSystemWideTopologyDM getNodeDM() {
         return (this.nodeDM);
     }
 
@@ -57,18 +55,18 @@ public class AuditEventHandler {
         return (LOG);
     }
 
-    protected List<String> getSiteAuditRecords(@Header("nodeKey") String nodeKey) throws ResourceInvalidSearchException {
+    protected List<String> getSiteAuditRecords(@Header("componentId") String componentId) throws ResourceInvalidSearchException {
         // Derive the site and entity type from the topologyNode
         // Site is in ITOpsMonitoredProcessingPlant
         // EntityType can be derived from ... ?
 
 
-        getLogger().debug(".getSiteAuditRecords(): Entry, nodeKey --> {}", nodeKey);
-        TopologyNode node = getNodeDM().getNode(nodeKey);
-        if (node.getComponentType().equals(TopologyNodeTypeEnum.PROCESSING_PLANT)) {
-            ProcessingPlantTopologyNode subsystemNode = (ProcessingPlantTopologyNode) node;
-            String site = extractSiteFromNode(subsystemNode.getNodeFDN());
-            String entityType = extractEntityTypeFromNode(subsystemNode.getNodeFDN());
+        getLogger().debug(".getSiteAuditRecords(): Entry, nodeKey --> {}", componentId);
+        ITOpsMonitoredNode node = getNodeDM().getNode(componentId);
+        if (node.getNodeType().equals(TopologyNodeTypeEnum.PROCESSING_PLANT)) {
+            ITOpsMonitoredProcessingPlant subsystemNode = (ITOpsMonitoredProcessingPlant) node;
+            String site = extractSiteFromNode(subsystemNode.getTopologyNodeFDN());
+            String entityType = extractEntityTypeFromNode(subsystemNode.getTopologyNodeFDN());
             String limit = LIMIT; // Must be int
 
             if(StringUtils.isNotBlank(site) && StringUtils.isNotBlank(entityType))
