@@ -21,23 +21,11 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.interact;
 
-import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeFDN;
-import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceNotFoundException;
-import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceUpdateException;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.IPCTopologyEndpoint;
-import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPServerClusterServiceTopologyEndpointPort;
-import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantTopologyNode;
-import net.fhirfactory.pegacorn.internals.PegacornReferenceProperties;
-import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
-import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsMetricsHandler;
-import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsPubSubReportHandler;
-import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsTopologyGraphHandler;
-import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ProcessingPlantTopologyNodeHandler;
-import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
-import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
-import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
-import net.fhirfactory.pegacorn.workshops.base.Workshop;
-import net.fhirfactory.pegacorn.wups.archetypes.unmanaged.NonResilientWithAuditTrailWUP;
+import java.util.ArrayList;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.OnExceptionDefinition;
@@ -47,9 +35,25 @@ import org.hl7.fhir.r4.model.AuditEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.util.ArrayList;
+import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeFDN;
+import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceNotFoundException;
+import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceUpdateException;
+import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.base.IPCTopologyEndpoint;
+import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies.HTTPServerClusterServiceTopologyEndpointPort;
+import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantTopologyNode;
+import net.fhirfactory.pegacorn.deployment.topology.model.nodes.WorkshopTopologyNode;
+import net.fhirfactory.pegacorn.internals.PegacornReferenceProperties;
+import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsMetricsHandler;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsPubSubReportHandler;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsTopologyGraphHandler;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ProcessingPlantTopologyNodeHandler;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.WorkshopTopologyNodeHandler;
+import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
+import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
+import net.fhirfactory.pegacorn.workshops.base.Workshop;
+import net.fhirfactory.pegacorn.wups.archetypes.unmanaged.NonResilientWithAuditTrailWUP;
 
 @ApplicationScoped
 public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
@@ -116,16 +120,36 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         rest("/ProcessingPlant")
                 .get("/{componentId}").outType(ProcessingPlantTopologyNode.class)
                     .to("direct:ProcessingPlantTopologyNodeGET")
+                .get("/{nodeKey}/Workshop").outType(WorkshopTopologyNode.class)
+                    .to("direct:WorkshopNodesGET")
                 .get("?pageSize={pageSize}&page={page}&sortBy={sortBy}&sortOrder={sortOrder}")
                     .param().name("pageSize").type(RestParamType.query).required(false).endParam()
                     .param().name("page").type(RestParamType.query).required(false).endParam()
                     .param().name("sortBy").type(RestParamType.query).required(false).endParam()
                     .param().name("sortOrder").type(RestParamType.query).required(false).endParam()
-                    .to("direct:ProcessingPlantTopologyNodeListGET");
+                    .to("direct:ProcessingPlantTopologyNodeListGET");      
+
+        rest("/AuditEvents")
+                .get("/{nodeName}")
+                .to("direct:AuditEventGET");
+        
+        rest("/Metrics")
+                .get("/{nodeName}")
+                .to("direct:MetricsGET");
+
+        rest("/Subscriptions")
+                .get("/{nodeName}")
+                .to("direct:SubscriptionsGET");
+
+
 
         from("direct:ITOpsTopologyGraphGET")
                 .log(LoggingLevel.INFO, "GET TopologyGraph")
                 .bean(topologyGraphHandler, "getTopologyGraph");
+        
+        from("direct:WorkshopNodesGET")
+                .log(LoggingLevel.INFO, "GET ProcessingPlant Workshops")
+                .bean(topologyWorkshopHandler, "getWorkshopTopologyNodes");
 
         from("direct:ProcessingPlantTopologyNodeGET")
                 .log(LoggingLevel.INFO, "GET Request --> ${body}")
@@ -134,13 +158,18 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
         from("direct:ProcessingPlantTopologyNodeListGET")
                 .log(LoggingLevel.INFO, "GET All Request")
                 .bean(processingPlantHandler, "getProcessingPlantTopologyNodeList");
+  
+        from("direct:AuditEventGET")
+                .log(LoggingLevel.INFO, "GET Request --> ${body}")
+                .bean(auditEventHandler, "getSiteAuditRecords");
 
         rest("/AuditEvents")
                 .get("/{componentId}").outType(AuditEvent.class)
                 .to("direct:AuditEventGET");
 
-        from("direct:AuditEventGET")
-                .log(LoggingLevel.INFO, "GET Request --> ${body}");
+        from("direct:SubscriptionsGET")
+                .log(LoggingLevel.INFO, "GET Request --> ${body}")
+                .bean(subscriptionsHandler, "getSubscriptions");
 
         //
         // Metrics
