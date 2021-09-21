@@ -21,15 +21,10 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.common;
 
-import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceInvalidSearchException;
-import net.fhirfactory.pegacorn.itops.model.common.ITOpsTransactionOutcome;
-import net.fhirfactory.pegacorn.itops.model.valuesets.ITOpsMonitoredNodeTypeEnum;
-import net.fhirfactory.pegacorn.petasos.endpoints.oam.itops.ITOpsDiscoveredNodesDM;
-import org.apache.camel.Header;
+import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideTopologyDM;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
-import java.util.List;
 
 public abstract class ITOpsResourceHandlerBase {
     private static String PAGINATION_PAGE_SIZE = "pageSize";
@@ -38,11 +33,11 @@ public abstract class ITOpsResourceHandlerBase {
     private static String SORT_ORDER = "sortOrder";
 
     @Inject
-    private ITOpsDiscoveredNodesDM nodeDM;
+    private ITOpsSystemWideTopologyDM nodeDM;
 
     abstract protected Logger getLogger();
 
-    protected ITOpsDiscoveredNodesDM getNodeDM(){
+    protected ITOpsSystemWideTopologyDM getNodeDM(){
         return(this.nodeDM);
     }
 

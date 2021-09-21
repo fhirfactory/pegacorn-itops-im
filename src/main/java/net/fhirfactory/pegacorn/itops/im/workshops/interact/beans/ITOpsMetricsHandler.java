@@ -21,8 +21,12 @@
  */
 package net.fhirfactory.pegacorn.itops.im.workshops.interact.beans;
 
-import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideTopologyDM;
-import net.fhirfactory.pegacorn.petasos.model.itops.topology.ITOpsTopologyGraph;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.fhirfactory.pegacorn.components.capabilities.CapabilityUtilisationBrokerInterface;
+import net.fhirfactory.pegacorn.components.capabilities.base.CapabilityUtilisationRequest;
+import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideMetricsDM;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
+import org.apache.camel.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,15 +34,25 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class ITOpsTopologyGraphHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(ITOpsTopologyGraphHandler.class);
+public class ITOpsMetricsHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(ITOpsMetricsHandler.class);
+
+    private ObjectMapper jsonMapper;
 
     @Inject
-    private ITOpsSystemWideTopologyDM graphFactory;
+    private CapabilityUtilisationBrokerInterface capabilityUtilisationBroker;
 
-    protected ITOpsTopologyGraph getTopologyGraph()  {
-        LOG.debug(".getTopologyGraph(): Entry");
-        ITOpsTopologyGraph nodeGraph = graphFactory.getTopologyGraph();
-        return(nodeGraph);
+    @Inject
+    private ITOpsSystemWideMetricsDM metricsDM;
+
+    public ITOpsMetricsHandler(){
+        jsonMapper = new ObjectMapper();
+    }
+
+
+    public ITOpsMetricsSet retrieveMetrics(@Header("componentId") String componentID){
+        CapabilityUtilisationRequest request = new CapabilityUtilisationRequest();
+        ITOpsMetricsSet componentMetricsSet = metricsDM.getComponentMetricsSet(componentID);
+        return(componentMetricsSet);
     }
 }

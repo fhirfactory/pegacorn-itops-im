@@ -29,9 +29,12 @@ import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.technologies
 import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantTopologyNode;
 import net.fhirfactory.pegacorn.internals.PegacornReferenceProperties;
 import net.fhirfactory.pegacorn.itops.im.common.ITOpsIMNames;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsMetricsHandler;
+import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsPubSubReportHandler;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ITOpsTopologyGraphHandler;
 import net.fhirfactory.pegacorn.itops.im.workshops.interact.beans.ProcessingPlantTopologyNodeHandler;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
+import net.fhirfactory.pegacorn.petasos.model.itops.metrics.ITOpsMetricsSet;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.workshops.base.Workshop;
 import net.fhirfactory.pegacorn.wups.archetypes.unmanaged.NonResilientWithAuditTrailWUP;
@@ -73,6 +76,12 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
     @Inject
     private ITOpsTopologyGraphHandler topologyGraphHandler;
 
+    @Inject
+    private ITOpsMetricsHandler metricsHandler;
+
+    @Inject
+    private ITOpsPubSubReportHandler pubSubReportHandler;
+
     //
     // Post Construct Activities
     //
@@ -104,7 +113,7 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                 .get("")
                     .to("direct:ITOpsTopologyGraphGET");
 
-        rest("/ProcessingPlantTopologyNode")
+        rest("/ProcessingPlant")
                 .get("/{componentId}").outType(ProcessingPlantTopologyNode.class)
                     .to("direct:ProcessingPlantTopologyNodeGET")
                 .get("?pageSize={pageSize}&page={page}&sortBy={sortBy}&sortOrder={sortOrder}")
@@ -127,12 +136,51 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
                 .bean(processingPlantHandler, "getProcessingPlantTopologyNodeList");
 
         rest("/AuditEvents")
-                .get("/{nodeName}").outType(AuditEvent.class)
+                .get("/{componentId}").outType(AuditEvent.class)
                 .to("direct:AuditEventGET");
 
         from("direct:AuditEventGET")
                 .log(LoggingLevel.INFO, "GET Request --> ${body}");
 
+        //
+        // Metrics
+        //
+
+        rest("/ProcessingPlant")
+                .get("/{componentId}/ITOpsMetrics").outType(ITOpsMetricsSet.class)
+                .to("direct:ProcessingPlantMetricsGET");
+
+        from("direct:ProcessingPlantMetricsGET")
+                .log(LoggingLevel.INFO, "GET Metrics Request")
+                .bean(metricsHandler, "retrieveMetrics");
+
+        rest("/WorkUnitProcessor")
+                .get("/{componentId}/ITOpsMetrics").outType(ITOpsMetricsSet.class)
+                .to("direct:WUPMetricsGET");
+
+        from("direct:WUPMetricsGET")
+                .log(LoggingLevel.INFO, "GET Metrics Request")
+                .bean(metricsHandler, "retrieveMetrics");
+
+        //
+        // PubSub Report
+        //
+
+        rest("/ProcessingPlant")
+                .get("/{componentId}/PublishSubscribeReport").outType(ITOpsMetricsSet.class)
+                .to("direct:ProcessingPlantPubSubReportGET");
+
+        from("direct:ProcessingPlantPubSubReportGET")
+                .log(LoggingLevel.INFO, "GET PubSub Report Request")
+                .bean(pubSubReportHandler, "retrieveProcessingPlantPubSubReport");
+
+        rest("/WorkUnitProcessor")
+                .get("/{componentId}/PublishSubscribeReport").outType(ITOpsMetricsSet.class)
+                .to("direct:WUPPubSubReportGET");
+
+        from("direct:WUPPubSubReportGET")
+                .log(LoggingLevel.INFO, "GET PubSub Report Request")
+                .bean(pubSubReportHandler, "retrieveWorkUnitProcessorPubSubReport");
     }
 
     @Override

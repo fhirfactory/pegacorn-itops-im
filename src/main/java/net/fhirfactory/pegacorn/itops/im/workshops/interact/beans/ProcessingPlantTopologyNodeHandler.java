@@ -23,28 +23,25 @@ package net.fhirfactory.pegacorn.itops.im.workshops.interact.beans;
 
 import net.fhirfactory.pegacorn.common.model.componentid.TopologyNodeTypeEnum;
 import net.fhirfactory.pegacorn.components.transaction.valuesets.exceptions.ResourceInvalidSearchException;
-import net.fhirfactory.pegacorn.deployment.topology.model.common.TopologyNode;
-import net.fhirfactory.pegacorn.deployment.topology.model.nodes.ProcessingPlantTopologyNode;
-import net.fhirfactory.pegacorn.deployment.topology.model.nodes.SubsystemTopologyNode;
-import net.fhirfactory.pegacorn.petasos.endpoints.oam.itops.ITOpsDiscoveredNodesDM;
+import net.fhirfactory.pegacorn.itops.im.workshops.cache.ITOpsSystemWideTopologyDM;
+import net.fhirfactory.pegacorn.petasos.model.itops.topology.ITOpsMonitoredProcessingPlant;
+import net.fhirfactory.pegacorn.petasos.model.itops.topology.common.ITOpsMonitoredNode;
 import org.apache.camel.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @ApplicationScoped
 public class ProcessingPlantTopologyNodeHandler {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessingPlantTopologyNodeHandler.class);
 
     @Inject
-    private ITOpsDiscoveredNodesDM nodeDM;
+    private ITOpsSystemWideTopologyDM nodeDM;
 
-    protected ITOpsDiscoveredNodesDM getNodeDM(){
+    protected ITOpsSystemWideTopologyDM getNodeDM(){
         return(this.nodeDM);
     }
 
@@ -52,30 +49,22 @@ public class ProcessingPlantTopologyNodeHandler {
         return(LOG);
     }
 
-    protected ProcessingPlantTopologyNode getProcessingPlantTopologyNode(@Header("componentId") String componentId) throws ResourceInvalidSearchException {
+    protected ITOpsMonitoredNode getProcessingPlantTopologyNode(@Header("componentId") String componentId) throws ResourceInvalidSearchException {
         getLogger().debug(".getProcessingPlantTopologyNode(): Entry, componentId --> {}", componentId);
-        TopologyNode node = getNodeDM().getNode(componentId);
-        if(node.getComponentType().equals(TopologyNodeTypeEnum.PROCESSING_PLANT)){
-            ProcessingPlantTopologyNode subsystemNode = (ProcessingPlantTopologyNode) node;
+        ITOpsMonitoredNode node = getNodeDM().getNode(componentId);
+        if(node.getNodeType().equals(TopologyNodeTypeEnum.PROCESSING_PLANT)){
+            ITOpsMonitoredProcessingPlant subsystemNode = (ITOpsMonitoredProcessingPlant) node;
             return(subsystemNode);
         }
         return(null);
     }
 
-    protected List<ProcessingPlantTopologyNode> getProcessingPlantTopologyNodeList(@Header("sortBy") String sortBy,
+    protected List<ITOpsMonitoredProcessingPlant> getProcessingPlantTopologyNodeList(@Header("sortBy") String sortBy,
                                                                                    @Header("sortOrder") String sortOrder,
                                                                                    @Header("pageSize") String pageSize,
                                                                                    @Header("page") String page){
         getLogger().info(".getProcessingPlantTopologyNodeList(): Entry");
-        Set<TopologyNode> nodeList = getNodeDM().getTopologyNodeSet();
-        List<ProcessingPlantTopologyNode> subsystemNodeList = new ArrayList<>();
-        for(TopologyNode currentNode: nodeList){
-            if(currentNode.getComponentType().equals(TopologyNodeTypeEnum.PROCESSING_PLANT)){
-                ProcessingPlantTopologyNode currentSubsystemNode = (ProcessingPlantTopologyNode)currentNode;
-                getLogger().info(".getProcessingPlantTopologyNodeList(): Adding Entry->{}", currentSubsystemNode.getComponentId());
-                subsystemNodeList.add(currentSubsystemNode);
-            }
-        }
-        return(subsystemNodeList);
+        List<ITOpsMonitoredProcessingPlant> nodeList = getNodeDM().getProcessingPlants();
+        return(nodeList);
     }
 }

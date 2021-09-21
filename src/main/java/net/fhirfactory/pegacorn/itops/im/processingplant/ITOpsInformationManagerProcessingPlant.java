@@ -29,4 +29,9 @@ public abstract class ITOpsInformationManagerProcessingPlant extends ProcessingP
     public boolean isITOpsNode() {
         return (true);
     }
+
+    @Override
+    protected void executePostConstructActivities() {
+
+    }
 }
