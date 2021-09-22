@@ -51,7 +51,7 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase {
 
     @Override
     public CapabilityUtilisationResponse executeTask(CapabilityUtilisationRequest request) {
-        getLogger().info(".executeTask(): Entry, request->{}", request);
+        getLogger().debug(".executeTask(): Entry, request->{}", request);
         if(request.getRequiredCapabilityName().contentEquals(ITOpsCapabilityNamesEnum.IT_OPS_PUBSUB_REPORT_COLLATOR.getCapabilityName())) {
             ITOpsPubSubReport pubsubReport = extractPubSubReport(request);
             if (pubsubReport != null) {
@@ -66,7 +66,7 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase {
             }
         }
         CapabilityUtilisationResponse response = generateBadResponse(request.getRequestID());
-        getLogger().info(".executeTask(): Exit, reponse->{}", response);
+        getLogger().debug(".executeTask(): Exit, reponse->{}", response);
         return (response);
     }
 
@@ -88,16 +88,16 @@ public class ITOpsPubSubReportReceiver extends ITOpsReceiverBase {
     }
 
     private void updateLocalCache(ITOpsPubSubReport report){
-        getLogger().info(".updateLocalCache(): Entry");
+        getLogger().debug(".updateLocalCache(): Entry");
         for(ProcessingPlantSubscriptionSummary currentSummary: report.getProcessingPlantSubscriptionSummarySet().values()){
-            getLogger().info(".updateLocalCache(): Updating->{}", currentSummary.getComponentID());
+            getLogger().trace(".updateLocalCache(): Updating->{}", currentSummary.getComponentID());
             pubsubMapDM.addProcessingPlantSubscriptionSummary(currentSummary);
         }
         for(WorkUnitProcessorSubscriptionSummary currentSummary: report.getWupSubscriptionSummarySet().values()){
-            getLogger().info(".updateLocalCache(): Updating->{}", currentSummary.getComponentID());
+            getLogger().trace(".updateLocalCache(): Updating->{}", currentSummary.getComponentID());
             pubsubMapDM.addWorkUnitProcessorSubscriptionSummary(currentSummary);
         }
-        getLogger().info(".updateLocalCache(): Exit");
+        getLogger().debug(".updateLocalCache(): Exit");
     }
 
 }

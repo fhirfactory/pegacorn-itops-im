@@ -52,12 +52,16 @@ public class ITOpsPubSubReportHandler {
 
 
     public ProcessingPlantSubscriptionSummary retrieveProcessingPlantPubSubReport(@Header("componentId") String componentId){
+        LOG.debug(".retrieveProcessingPlantPubSubReport(): Entry, componentId->{}", componentId);
         ProcessingPlantSubscriptionSummary processingPlantPubSubReport = pubSubMapDM.getProcessingPlantPubSubReport(componentId);
+        LOG.debug(".retrieveProcessingPlantPubSubReport(): Exit");
         return(processingPlantPubSubReport);
     }
 
     public WorkUnitProcessorSubscriptionSummary retrieveWorkUnitProcessorPubSubReport(@Header("componentId")String componentId){
+        LOG.debug(".retrieveWorkUnitProcessorPubSubReport(): Entry, componentId->{}", componentId);
         WorkUnitProcessorSubscriptionSummary wupPubSubReport = pubSubMapDM.getWorkUnitProcessorPubSubReport(componentId);
+        LOG.debug(".retrieveWorkUnitProcessorPubSubReport(): Exit");
         return(wupPubSubReport);
     }
 }

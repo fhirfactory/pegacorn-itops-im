@@ -100,10 +100,12 @@ public class ITOpsHTTPServer extends NonResilientWithAuditTrailWUP {
     @Override
     public void configure() throws Exception {
 
-        restConfiguration()
+         restConfiguration()
                     .component("netty-http")
                     .scheme(getHTTPScheme())
                     .bindingMode(RestBindingMode.json)
+                    .dataFormatProperty("moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
+                    .dataFormatProperty("disableFeatures", "WRITE_DATES_AS_TIMESTAMPS")
                     .dataFormatProperty("prettyPrint", "true")
                     .contextPath(getPegacornReferenceProperties().getITOpsContextPath())
                     .host(getServerHostName())

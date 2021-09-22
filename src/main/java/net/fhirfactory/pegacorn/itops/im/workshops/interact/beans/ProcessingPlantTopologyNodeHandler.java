@@ -63,7 +63,7 @@ public class ProcessingPlantTopologyNodeHandler {
                                                                                    @Header("sortOrder") String sortOrder,
                                                                                    @Header("pageSize") String pageSize,
                                                                                    @Header("page") String page){
-        getLogger().info(".getProcessingPlantTopologyNodeList(): Entry");
+        getLogger().debug(".getProcessingPlantTopologyNodeList(): Entry");
         List<ITOpsMonitoredProcessingPlant> nodeList = getNodeDM().getProcessingPlants();
         return(nodeList);
     }

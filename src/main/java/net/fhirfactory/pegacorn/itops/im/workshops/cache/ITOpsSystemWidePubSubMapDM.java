@@ -53,29 +53,36 @@ public class ITOpsSystemWidePubSubMapDM extends ITOpsLocalDMRefreshBase {
     //
 
     public void addProcessingPlantSubscriptionSummary(ProcessingPlantSubscriptionSummary summary){
+        LOG.debug(".addProcessingPlantSubscriptionSummary(): Entry, summary->{}", summary);
         if(processingPlantSubscriptionSummarySet.containsKey(summary.getComponentID())){
             processingPlantSubscriptionSummarySet.remove(summary.getComponentID());
         }
         processingPlantSubscriptionSummarySet.put(summary.getComponentID(), summary);
         refreshCurrentStateUpdateInstant();
+        LOG.debug(".addProcessingPlantSubscriptionSummary(): Exit");
     }
 
     public void addWorkUnitProcessorSubscriptionSummary(WorkUnitProcessorSubscriptionSummary summary){
+        LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Entry, summary->{}", summary);
         if(workUnitProcessorSubscriptionSummarySet.containsKey(summary.getSubscriber())){
             workUnitProcessorSubscriptionSummarySet.remove(summary.getSubscriber());
         }
         workUnitProcessorSubscriptionSummarySet.put(summary.getSubscriber(), summary);
         refreshCurrentStateUpdateInstant();
+        LOG.debug(".addWorkUnitProcessorSubscriptionSummary(): Exit" );
     }
 
     public ProcessingPlantSubscriptionSummary getProcessingPlantPubSubReport(String componentID){
+        LOG.debug(".getProcessingPlantPubSubReport(): Entry, componentID->{}", componentID);
         if(StringUtils.isEmpty(componentID)){
+            LOG.debug(".getProcessingPlantPubSubReport(): Exit, componentID is empty");
             return(null);
         }
         if(processingPlantSubscriptionSummarySet.containsKey(componentID)){
             ProcessingPlantSubscriptionSummary summary = processingPlantSubscriptionSummarySet.get(componentID);
             return(summary);
         } else {
+            LOG.debug(".getProcessingPlantPubSubReport(): Exit, cannot find processing plant with given componentID");
             return(null);
         }
     }
